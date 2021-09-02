@@ -1,33 +1,60 @@
 ﻿using Dev_cardMVC.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using Dev_cardMVC.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Dev_cardMVC.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+       
+        private readonly List<Service> _s = new List<Service>
         {
-            _logger = logger;
-        }
+            new Service(1,"gold"),
+            new Service(1,"silver"),
+            new Service(1,"bronze"),
+        };
 
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Contact()
+        public IActionResult PDetails(int id)
         {
-            return View();
+            var project = Projectstore.GetProjectBy(id);
+            return View(project);
         }
 
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            var model = new Contactform 
+            {
+                Services = new SelectList(_s,"Id","Name")
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult Contact(Contactform cf)
+        {
+            cf.Services = new SelectList(_s,"Id","Name");
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Error = "Not Send please check";
+                return View(cf);
+            }
+            ModelState.Clear();
+            cf = new Contactform
+            {
+                Services = new SelectList(_s, "Id", "Name")
+            };
+            ViewBag.Success = "Send Done";
+            return View(cf);
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
